@@ -1,0 +1,53 @@
+title: Persistencia mediante unidad systemd
+id: 0bd028cb-d6d3-4bce-9ae5-74d0cdf61f68
+name: persistencia_systemd
+status: test
+description: >
+  Creación o modificación de unidades .service, .timer, .socket o .path en los
+  directorios de systemd, incluidas las unidades de usuario. Una unidad nueva fuera de un
+  gestor de paquetes suele ser un servicio malicioso disfrazado.
+references:
+  - https://attack.mitre.org/techniques/T1543/002/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.persistence
+  - attack.t1543.002
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection_sistema:
+    data.audit.file.name|startswith:
+      - '/etc/systemd/system/'
+      - '/usr/lib/systemd/system/'
+      - '/lib/systemd/system/'
+      - '/run/systemd/system/'
+  selection_usuario:
+    data.audit.file.name|contains:
+      - '/.config/systemd/user/'
+      - '/.local/share/systemd/user/'
+      - '/etc/systemd/user/'
+      - '/usr/lib/systemd/user/'
+  selection_unidad:
+    data.audit.file.name|endswith:
+      - '.service'
+      - '.timer'
+      - '.socket'
+      - '.path'
+    data.audit.success: 'yes'
+  filter_herramientas:
+    data.audit.exe|endswith:
+      - '/dpkg'
+      - '/rpm'
+      - '/dnf'
+      - '/yum'
+      - '/apt-get'
+      - '/snapd'
+      - '/systemctl'
+  condition: (selection_sistema or selection_usuario) and selection_unidad and not filter_herramientas
+falsepositives:
+  - Instalación manual de software que registra su propio servicio
+  - Los symlinks que crea systemctl enable quedan excluidos; la unidad original sí se detecta
+  - Herramientas de configuración que despliegan unidades (Ansible, Puppet)
+level: medium

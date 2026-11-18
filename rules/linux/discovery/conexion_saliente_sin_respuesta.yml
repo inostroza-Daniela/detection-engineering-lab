@@ -1,0 +1,31 @@
+title: Conexión TCP saliente sin respuesta
+id: 8b8aa783-84f3-4412-86ff-0ef3971bcec2
+name: conexion_saliente_sin_respuesta
+status: test
+description: >
+  Flujo TCP iniciado desde la red interna que no recibió ningún paquete de
+  vuelta (SYN sin respuesta). Regla base: una sola no significa nada, muchas
+  en poco tiempo desde el mismo origen son un escaneo.
+references:
+  - https://attack.mitre.org/techniques/T1046/
+  - https://docs.suricata.io/en/latest/output/eve/eve-json-format.html
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.discovery
+  - attack.t1046
+logsource:
+  product: linux
+  category: network_connection
+detection:
+  selection:
+    data.proto: 'TCP'
+    data.flow.pkts_toclient: 0
+    data.src_ip|cidr:
+      - '10.0.0.0/8'
+      - '172.16.0.0/12'
+      - '192.168.0.0/16'
+  condition: selection
+falsepositives:
+  - Servicios caídos a los que siguen llegando conexiones legítimas; esta regla no alerta por sí sola
+level: informational

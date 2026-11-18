@@ -1,0 +1,50 @@
+title: Escalamiento anómalo con sudo o su
+id: 636965d1-130a-4890-b42c-11678501d5a7
+name: escalamiento_sudo_su_anomalo
+status: test
+description: >
+  Uso de sudo o su fuera de lo esperado: apertura de una shell root vía sudo,
+  intentos rechazados (usuario fuera de sudoers, comando no permitido o claves
+  incorrectas repetidas), fallos de su, o su a root desde una cuenta de servicio.
+references:
+  - https://attack.mitre.org/techniques/T1548/003/
+  - https://www.sudo.ws/docs/man/sudoers.man/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.privilege_escalation
+  - attack.t1548.003
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection_sudo_shell:
+    decoder.name: 'sudo'
+    data.dstuser: 'root'
+    data.command|re: '(^|/)(bash|sh|dash|zsh|ksh|su)( |$)'
+  selection_sudo_rechazado:
+    decoder.name: 'sudo'
+    full_log|contains:
+      - 'user NOT in sudoers'
+      - 'command not allowed'
+      - 'incorrect password attempts'
+  selection_su_fallido:
+    decoder.name: 'su'
+    rule.groups|contains: 'authentication_failed'
+  selection_su_desde_servicio:
+    decoder.name: 'su'
+    data.dstuser: 'root'
+    data.srcuser:
+      - 'www-data'
+      - 'nginx'
+      - 'apache'
+      - 'postgres'
+      - 'mysql'
+      - 'nobody'
+  filter_automatizacion:
+    data.srcuser|startswith: 'svc-'
+  condition: 1 of selection_* and not filter_automatizacion
+falsepositives:
+  - Administradores que abren shell root con sudo -i o sudo su (ajustar el filtro de automatización o acotar por usuario)
+  - Cuentas de servicio con sudo legítimo cuyo nombre no sigue el prefijo svc-
+level: medium

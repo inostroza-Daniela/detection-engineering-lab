@@ -1,0 +1,70 @@
+title: Acceso a /etc/shadow o modificación directa de /etc/passwd
+id: b0ba4bb6-e170-4b63-8cd5-28b3e489f635
+name: modificacion_passwd_shadow
+status: test
+description: >
+  Lectura o escritura de /etc/shadow y /etc/gshadow, y escritura de /etc/passwd
+  y /etc/group, por un proceso que no es una herramienta de autenticación ni de
+  administración de cuentas. Un cat, un editor, una shell o un script tocando
+  estos archivos indica volcado de hashes, inserción de cuentas o manipulación
+  de credenciales. Requiere el watch -p rwa sobre shadow y gshadow.
+references:
+  - https://attack.mitre.org/techniques/T1003/008/
+  - https://attack.mitre.org/techniques/T1098/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.credential_access
+  - attack.persistence
+  - attack.t1003.008
+  - attack.t1098
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection_shadow:
+    data.audit.file.name|startswith:
+      - '/etc/shadow'
+      - '/etc/gshadow'
+  selection_passwd:
+    data.audit.file.name|startswith:
+      - '/etc/passwd'
+      - '/etc/group'
+    data.audit.success: 'yes'
+  filter_herramientas:
+    data.audit.exe:
+      - '/usr/sbin/useradd'
+      - '/usr/sbin/userdel'
+      - '/usr/sbin/usermod'
+      - '/usr/sbin/groupadd'
+      - '/usr/sbin/groupdel'
+      - '/usr/sbin/groupmod'
+      - '/usr/sbin/chpasswd'
+      - '/usr/sbin/pwconv'
+      - '/usr/sbin/grpconv'
+      - '/usr/sbin/pwck'
+      - '/usr/sbin/grpck'
+      - '/usr/sbin/vipw'
+      - '/usr/sbin/vigr'
+      - '/usr/bin/passwd'
+      - '/usr/bin/chage'
+      - '/usr/bin/gpasswd'
+      - '/usr/bin/chsh'
+      - '/usr/bin/chfn'
+  filter_autenticacion:
+    data.audit.exe:
+      - '/usr/sbin/sshd'
+      - '/usr/lib/openssh/sshd-session'
+      - '/usr/sbin/unix_chkpwd'
+      - '/usr/bin/sudo'
+      - '/usr/bin/su'
+      - '/usr/bin/login'
+      - '/usr/sbin/cron'
+      - '/usr/lib/systemd/systemd-logind'
+      - '/usr/bin/sshd'
+  condition: (selection_shadow or selection_passwd) and not 1 of filter_*
+falsepositives:
+  - Herramientas de configuración (Ansible, Puppet) que escriben estos archivos directamente
+  - Servicios con módulos PAM propios que leen shadow (gestores de pantalla, dovecot, samba): sumarlos al filtro de autenticación
+  - Editores usados por administradores en mantenimiento planificado
+level: high

@@ -1,0 +1,91 @@
+title: Borrado de logs o del historial de comandos
+id: 5c70de3c-2734-4b96-84ec-239f70c97400
+name: borrado_logs_historial
+status: test
+description: >
+  Eliminación, truncado o destrucción de archivos de log del sistema o de
+  auditoría por procesos que no son los servicios que los administran, y
+  limpieza del historial de la shell mediante comandos o borrado del archivo.
+references:
+  - https://attack.mitre.org/techniques/T1070/002/
+  - https://attack.mitre.org/techniques/T1070/003/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.defense_evasion
+  - attack.t1070.002
+  - attack.t1070.003
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection_logs:
+    data.audit.file.name|startswith:
+      - '/var/log/auth.log'
+      - '/var/log/secure'
+      - '/var/log/syslog'
+      - '/var/log/messages'
+      - '/var/log/wtmp'
+      - '/var/log/btmp'
+      - '/var/log/lastlog'
+      - '/var/log/audit/'
+      - '/var/log/journal/'
+    data.audit.success: 'yes'
+  filter_servicios:
+    data.audit.exe:
+      - '/usr/sbin/rsyslogd'
+      - '/usr/sbin/syslog-ng'
+      - '/usr/sbin/logrotate'
+      - '/usr/sbin/auditd'
+      - '/usr/sbin/sshd'
+      - '/usr/lib/openssh/sshd-session'
+      - '/usr/sbin/cron'
+      - '/usr/sbin/agetty'
+      - '/usr/bin/login'
+      - '/usr/bin/sudo'
+      - '/usr/bin/su'
+      - '/usr/lib/systemd/systemd-journald'
+      - '/lib/systemd/systemd-journald'
+      - '/usr/lib/systemd/systemd-logind'
+      - '/usr/lib/systemd/systemd'
+      - '/usr/bin/gzip'
+      - '/usr/bin/xz'
+  selection_comando_historial:
+    data.audit.execve.cmdline|contains:
+      - 'history -c'
+      - 'history -w'
+      - 'unset HISTFILE'
+      - 'HISTFILE=/dev/null'
+      - 'HISTSIZE=0'
+      - 'HISTFILESIZE=0'
+      - 'set +o history'
+  selection_archivo_historial:
+    data.audit.file.name|endswith:
+      - '/.bash_history'
+      - '/.zsh_history'
+      - '/.python_history'
+      - '/.mysql_history'
+      - '/.psql_history'
+    data.audit.exe|endswith:
+      - '/rm'
+      - '/shred'
+      - '/truncate'
+      - '/unlink'
+      - '/ln'
+  selection_borrado_cmd:
+    data.audit.exe|endswith:
+      - '/rm'
+      - '/shred'
+      - '/truncate'
+      - '/unlink'
+    data.audit.execve.cmdline|contains:
+      - '/var/log/'
+      - '_history'
+  selection_enlace_historial:
+    data.audit.exe|endswith: '/ln'
+    data.audit.execve.cmdline|contains: '_history'
+  condition: (selection_logs and not filter_servicios) or selection_comando_historial or selection_archivo_historial or selection_borrado_cmd or selection_enlace_historial
+falsepositives:
+  - Rotación de logs con herramientas no listadas en el filtro de servicios
+  - Limpieza de disco planificada que elimina logs antiguos (acotar por ruta o ventana de mantenimiento)
+level: high

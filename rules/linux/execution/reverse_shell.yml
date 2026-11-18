@@ -1,0 +1,63 @@
+title: Reverse shell con bash, netcat, socat o intérpretes
+id: b0ddbaa6-a2b7-468c-8959-84f96267bb99
+name: reverse_shell
+status: test
+description: >
+  Línea de comando con los patrones clásicos de reverse shell: redirección a
+  /dev/tcp, netcat con -e o --exec, socat con exec:, mkfifo encadenado a una
+  herramienta de red, o un intérprete que abre un socket y duplica los
+  descriptores de la shell.
+references:
+  - https://attack.mitre.org/techniques/T1059/004/
+  - https://attack.mitre.org/techniques/T1095/
+  - https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.execution
+  - attack.command_and_control
+  - attack.t1059.004
+  - attack.t1095
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection_dev_tcp:
+    data.audit.execve.cmdline|contains:
+      - '/dev/tcp/'
+      - '/dev/udp/'
+  selection_netcat:
+    data.audit.exe|endswith:
+      - '/nc'
+      - '/ncat'
+      - '/netcat'
+      - '/nc.traditional'
+      - '/nc.openbsd'
+    data.audit.execve.cmdline|re: '(\s-[a-zA-Z]*[ce](\s|/|$)|--exec|--sh-exec)'
+  selection_socat:
+    data.audit.exe|endswith: '/socat'
+    data.audit.execve.cmdline|contains:
+      - 'exec:'
+      - 'system:'
+  selection_mkfifo:
+    data.audit.execve.cmdline|re: 'mkfifo.*\|\s*(nc|ncat|netcat|socat|openssl)\b'
+  selection_python_perl:
+    data.audit.execve.cmdline|contains|all:
+      - 'socket'
+      - 'connect'
+    data.audit.execve.cmdline|contains:
+      - 'dup2'
+      - 'pty.spawn'
+      - '/bin/sh'
+      - '/bin/bash'
+  selection_php:
+    data.audit.execve.cmdline|contains: 'fsockopen'
+    data.audit.execve.cmdline|re: '(exec|system|popen|proc_open|shell_exec)\s*\(|/bin/(ba)?sh'
+  selection_ruby:
+    data.audit.execve.cmdline|contains: 'TCPSocket'
+    data.audit.execve.cmdline|re: '\b(exec|spawn|system|popen)\b|/bin/(ba)?sh'
+  condition: 1 of selection_*
+falsepositives:
+  - Scripts de monitoreo que usan /dev/tcp para comprobar puertos (muy raro con shell interactiva)
+  - Pruebas de red con netcat en modo cliente sin -e
+level: critical

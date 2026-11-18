@@ -1,0 +1,50 @@
+title: Cuenta local creada o agregada a sudo
+id: ea7d86be-f211-40c4-b91b-c502128792e3
+name: cuenta_local_creada_o_agregada_a_sudo
+status: test
+description: >
+  Creación de una cuenta local interactiva, incorporación de un usuario a los
+  grupos sudo/wheel/admin o escritura en /etc/sudoers o /etc/sudoers.d.
+  Los tres caminos entregan persistencia con privilegios al atacante. Se busca
+  en la línea de comando y no en `exe` porque adduser es un script en perl.
+references:
+  - https://attack.mitre.org/techniques/T1136/001/
+  - https://attack.mitre.org/techniques/T1098/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.persistence
+  - attack.privilege_escalation
+  - attack.t1136.001
+  - attack.t1098
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection_creacion:
+    data.audit.execve.cmdline|re: '(^|[\s/])(useradd|adduser)\s'
+  filter_cuenta_sistema:
+    data.audit.execve.cmdline|contains:
+      - '--system'
+      - ' -r '
+  selection_grupo_sudo:
+    data.audit.execve.cmdline|re:
+      - '(^|[\s/])usermod\s.*(-aG|-G|--groups|--append)\s+(\S+,)?(sudo|wheel|admin)\b'
+      - '(^|[\s/])gpasswd\s.*(-a|--add)\s+\S+\s+(sudo|wheel|admin)\b'
+      - '(^|[\s/])adduser\s+\S+\s+(sudo|wheel|admin)\b'
+  selection_sudoers:
+    data.audit.file.name|startswith: '/etc/sudoers'
+    data.audit.success: 'yes'
+  filter_paquetes:
+    data.audit.exe|endswith:
+      - '/dpkg'
+      - '/rpm'
+      - '/dnf'
+      - '/yum'
+      - '/apt-get'
+      - '/visudo'
+  condition: ((selection_creacion and not filter_cuenta_sistema) or selection_grupo_sudo or selection_sudoers) and not filter_paquetes
+falsepositives:
+  - Aprovisionamiento con Ansible, cloud-init o scripts de onboarding
+  - Administradores editando sudoers con visudo (ya filtrado)
+level: high

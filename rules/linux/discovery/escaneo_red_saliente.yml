@@ -1,0 +1,30 @@
+title: Escaneo de puertos saliente
+id: fd72cbc3-d895-4d43-8841-9f2b9411d91f
+name: escaneo_red_saliente
+status: test
+description: >
+  Un mismo origen interno intenta conectarse a veinte o más puertos distintos
+  sin obtener respuesta en un minuto. Es el comportamiento de nmap, masscan o
+  de un script de descubrimiento tras comprometer un equipo.
+references:
+  - https://attack.mitre.org/techniques/T1046/
+  - https://nmap.org/book/man-port-scanning-techniques.html
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.discovery
+  - attack.t1046
+correlation:
+  type: value_count
+  rules:
+    - conexion_saliente_sin_respuesta
+  group-by:
+    - data.src_ip
+  timespan: 1m
+  condition:
+    field: data.dest_port
+    gte: 20
+falsepositives:
+  - Escáneres de vulnerabilidades autorizados (excluir sus IPs antes del motor)
+  - Herramientas de inventario que verifican muchos puertos por host
+level: high

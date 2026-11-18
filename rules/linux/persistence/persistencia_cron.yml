@@ -1,0 +1,42 @@
+title: Persistencia mediante cron
+id: c060f6fb-c45e-4827-806f-166691d83958
+name: persistencia_cron
+status: test
+description: >
+  Escritura en los directorios y archivos de cron del sistema o de usuarios.
+  Es uno de los mecanismos de persistencia más usados en Linux porque no
+  requiere privilegios para el crontab del propio usuario.
+references:
+  - https://attack.mitre.org/techniques/T1053/003/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.persistence
+  - attack.t1053.003
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection:
+    data.audit.file.name|startswith:
+      - '/etc/crontab'
+      - '/etc/cron.d/'
+      - '/etc/cron.hourly/'
+      - '/etc/cron.daily/'
+      - '/etc/cron.weekly/'
+      - '/etc/cron.monthly/'
+      - '/var/spool/cron/'
+    data.audit.success: 'yes'
+  filter_paquetes:
+    data.audit.exe|endswith:
+      - '/dpkg'
+      - '/rpm'
+      - '/dnf'
+      - '/yum'
+      - '/apt-get'
+  condition: selection and not filter_paquetes
+falsepositives:
+  - crontab -e de usuarios normales: es el falso positivo principal y es deliberado, porque un atacante usa el mismo binario; acotar por usuario si molesta
+  - Instalación de paquetes que traen tareas cron (ya filtrado para los gestores habituales)
+  - Despliegues que registran tareas programadas de forma legítima
+level: medium

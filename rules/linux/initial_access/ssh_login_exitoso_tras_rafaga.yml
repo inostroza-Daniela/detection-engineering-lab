@@ -1,0 +1,29 @@
+title: Login SSH exitoso tras ráfaga de fallos
+id: ee3a5b04-0680-4e8b-ac58-9faf9aa7308d
+name: ssh_login_exitoso_tras_rafaga
+status: test
+description: >
+  Una IP que acaba de generar una ráfaga de fallos de autenticación consigue
+  abrir una sesión SSH dentro de los diez minutos siguientes. Es la señal de
+  que la fuerza bruta funcionó o de que se adivinó la clave de una cuenta válida.
+references:
+  - https://attack.mitre.org/techniques/T1110/001/
+  - https://attack.mitre.org/techniques/T1078/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.initial_access
+  - attack.credential_access
+  - attack.t1110.001
+  - attack.t1078
+correlation:
+  type: temporal_ordered
+  rules:
+    - ssh_fuerza_bruta
+    - ssh_login_exitoso
+  group-by:
+    - data.srcip
+  timespan: 10m
+falsepositives:
+  - Administrador que se equivoca muchas veces de clave y luego entra con la correcta
+level: high

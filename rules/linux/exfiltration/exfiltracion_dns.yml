@@ -1,0 +1,50 @@
+title: Exfiltración o túnel por DNS
+id: 2c5285ac-3bb6-4c60-a1b7-eac644e3b1cc
+name: exfiltracion_dns
+status: test
+description: >
+  Consulta DNS cuyo primer label es anormalmente largo y codificado (base32,
+  base64 o hexadecimal), consulta de tipo NULL, o consulta TXT con subdominio
+  codificado. Son las huellas de herramientas como iodine, dnscat2 o de
+  exfiltración casera en trozos por subdominio.
+references:
+  - https://attack.mitre.org/techniques/T1048/003/
+  - https://attack.mitre.org/techniques/T1071/004/
+  - https://docs.suricata.io/en/latest/output/eve/eve-json-format.html
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.exfiltration
+  - attack.command_and_control
+  - attack.t1048.003
+  - attack.t1071.004
+logsource:
+  product: linux
+  category: dns_query
+detection:
+  consulta:
+    data.dns.type: 'query'
+  sospechoso_label_largo:
+    data.dns.rrname|re|i: '^[a-z0-9+/=_-]{40,}\.'
+  sospechoso_tipo_null:
+    data.dns.rrtype: 'NULL'
+  sospechoso_txt_codificado:
+    data.dns.rrtype: 'TXT'
+    data.dns.rrname|re|i: '^[a-z0-9]{20,}\.'
+  filter_conocidos:
+    data.dns.rrname|endswith:
+      - '.in-addr.arpa'
+      - '.ip6.arpa'
+      - '.spf.protection.outlook.com'
+      - '._spf.google.com'
+      - '.spamhaus.org'
+      - '.cloudfront.net'
+      - '.akamaiedge.net'
+      - '.gvt1.com'
+      - '.1e100.net'
+      - '.windowsupdate.com'
+  condition: consulta and 1 of sospechoso_* and not filter_conocidos
+falsepositives:
+  - CDNs y servicios antispam que usan labels largos o consultas TXT masivas (ampliar el filtro de dominios conocidos)
+  - Resolvers de clientes de correo que verifican SPF/DKIM con consultas TXT
+level: high

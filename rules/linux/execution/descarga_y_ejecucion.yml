@@ -1,0 +1,33 @@
+title: Descarga y ejecución directa (curl | sh)
+id: e4ee2dcf-633b-4f68-8b80-428f9ba2d320
+name: descarga_y_ejecucion
+status: test
+description: >
+  Descarga de un recurso con curl o wget y ejecución inmediata: tubería a una
+  shell, sustitución de comando o proceso, o descarga a un directorio temporal
+  seguida de chmod. Es el patrón habitual de stagers y mineros.
+references:
+  - https://attack.mitre.org/techniques/T1105/
+  - https://attack.mitre.org/techniques/T1059/004/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.command_and_control
+  - attack.execution
+  - attack.t1105
+  - attack.t1059.004
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection_tuberia:
+    data.audit.execve.cmdline|re: '\b(curl|wget)\b[^|]*\|\s*(sudo\s+)?(ba|z|da|k)?sh\b'
+  selection_sustitucion:
+    data.audit.execve.cmdline|re: '\b(ba|z|da|k)?sh\b[^$]*(\$\(|<\()\s*(curl|wget)\b'
+  selection_temporal:
+    data.audit.execve.cmdline|re: '\b(curl|wget)\b.*(/tmp/|/dev/shm/|/var/tmp/).*\bchmod\b'
+  condition: 1 of selection_*
+falsepositives:
+  - Instaladores oficiales que documentan curl | sh (Homebrew, rustup, nvm) ejecutados por administradores
+  - Pipelines de CI que descargan y ejecutan scripts de build
+level: high

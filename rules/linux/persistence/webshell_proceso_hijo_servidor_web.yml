@@ -1,0 +1,40 @@
+title: Webshell - proceso de sistema lanzado por el servidor web
+id: 5a4684f6-32e6-4f40-97b9-c4fb456459b7
+name: webshell_proceso_hijo_servidor_web
+status: test
+description: >
+  La cuenta del servidor web (www-data, apache, nginx) ejecuta una shell, un
+  intérprete, una herramienta de red o un comando de reconocimiento. Un
+  servidor web sano sirve contenido; cuando empieza a lanzar procesos de
+  sistema, casi siempre hay una webshell detrás.
+references:
+  - https://attack.mitre.org/techniques/T1505/003/
+  - https://owasp.org/www-community/attacks/Web_Shell
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1505.003
+  - attack.t1059.004
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection_usuario_web:
+    data.audit.uid:
+      - 33
+      - 48
+      - 'www-data'
+      - 'apache'
+      - 'nginx'
+      - 'http'
+  selection_proceso:
+    data.audit.exe|re: '/(sh|bash|dash|zsh|python[0-9.]*|perl[0-9.]*|nc(\.openbsd|\.traditional)?|ncat|netcat|curl|wget|id|whoami|uname|hostname)$'
+  filter_php_cli:
+    data.audit.exe|endswith: '/php'
+  condition: selection_usuario_web and selection_proceso and not filter_php_cli
+falsepositives:
+  - Aplicaciones web que invocan comandos del sistema de forma legítima (conversión de imágenes, backups)
+  - Tareas cron ejecutadas como el usuario del servidor web
+level: high

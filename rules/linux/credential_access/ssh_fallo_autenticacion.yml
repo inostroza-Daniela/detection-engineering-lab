@@ -1,0 +1,33 @@
+title: Fallo de autenticación SSH
+id: b55ef7f2-b295-405d-9a11-c2830d22bf74
+name: ssh_fallo_autenticacion
+status: test
+description: >
+  Intento de autenticación fallido en sshd, incluyendo usuarios inexistentes.
+  Regla base: por sí sola no es una alerta, alimenta las correlaciones de
+  fuerza bruta y de login exitoso tras ráfaga de fallos.
+references:
+  - https://attack.mitre.org/techniques/T1110/001/
+  - https://documentation.wazuh.com/current/user-manual/ruleset/ruleset-xml-syntax/rules.html
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.credential_access
+  - attack.t1110.001
+logsource:
+  product: linux
+  service: sshd
+detection:
+  selection:
+    rule.groups|contains:
+      - 'authentication_failed'
+      - 'invalid_login'
+  filter_local:
+    data.srcip|cidr:
+      - '127.0.0.0/8'
+      - '::1/128'
+  condition: selection and not filter_local
+falsepositives:
+  - Usuarios legítimos que escriben mal la clave
+  - Llaves SSH caducadas en herramientas de automatización
+level: informational

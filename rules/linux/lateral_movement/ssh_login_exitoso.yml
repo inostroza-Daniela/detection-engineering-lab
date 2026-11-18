@@ -1,0 +1,24 @@
+title: Login SSH exitoso
+id: 338ad587-9e74-42ee-9d9a-7c2594a5c33d
+name: ssh_login_exitoso
+status: test
+description: >
+  Sesión SSH abierta con éxito. Regla base: registra el acceso para que las
+  correlaciones puedan detectar un login exitoso después de una ráfaga de fallos.
+references:
+  - https://attack.mitre.org/techniques/T1021/004/
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.lateral_movement
+  - attack.t1021.004
+logsource:
+  product: linux
+  service: sshd
+detection:
+  selection:
+    rule.groups|contains: 'authentication_success'
+  condition: selection
+falsepositives:
+  - Todo acceso SSH legítimo; esta regla no alerta por sí sola
+level: informational

@@ -1,0 +1,29 @@
+title: Fuerza bruta SSH desde una misma IP
+id: 9c191180-315f-4a64-9a4e-e58685d11a46
+name: ssh_fuerza_bruta
+status: test
+description: >
+  Diez o más fallos de autenticación SSH desde la misma IP de origen en dos
+  minutos. El umbral está pensado para un servidor expuesto a internet; en una
+  red interna puede bajarse.
+references:
+  - https://attack.mitre.org/techniques/T1110/001/
+  - https://sigmahq.io/docs/meta/correlations.html
+author: Daniela Inostroza
+date: 2026-11-18
+tags:
+  - attack.credential_access
+  - attack.t1110.001
+correlation:
+  type: event_count
+  rules:
+    - ssh_fallo_autenticacion
+  group-by:
+    - data.srcip
+  timespan: 2m
+  condition:
+    gte: 10
+falsepositives:
+  - Escáneres de vulnerabilidades internos autorizados
+  - Herramientas de monitoreo con credenciales rotadas sin actualizar
+level: medium
