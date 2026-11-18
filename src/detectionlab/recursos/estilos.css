@@ -1,0 +1,41 @@
+:root { --fondo:#0f172a; --panel:#1e293b; --texto:#e2e8f0; --tenue:#94a3b8; --borde:#334155;
+  --n1:#7c2d12; --n2:#c2410c; --n3:#f97316; --ok:#16a34a; --falla:#dc2626; --info:#64748b; }
+* { box-sizing:border-box; }
+body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background:var(--fondo); color:var(--texto); line-height:1.45; }
+header { padding:2rem 2rem 1rem; border-bottom:1px solid var(--borde); }
+header h1 { margin:0 0 .25rem; font-size:1.6rem; }
+header p { margin:0; color:var(--tenue); }
+main { padding:1.5rem 2rem 3rem; max-width:1400px; margin:0 auto; }
+h2 { font-size:1.2rem; margin:2rem 0 .75rem; }
+.tarjetas { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:.75rem; }
+.tarjeta { background:var(--panel); border:1px solid var(--borde); border-radius:.5rem; padding:.9rem 1rem;
+  display:flex; flex-direction:column; }
+.tarjeta .valor { font-size:1.8rem; font-weight:700; }
+.tarjeta .titulo { font-weight:600; }
+.tarjeta .detalle { color:var(--tenue); font-size:.8rem; }
+.matriz { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(150px,1fr); gap:.5rem; overflow-x:auto;
+  padding-bottom:.5rem; }
+.tactica { background:var(--panel); border:1px solid var(--borde); border-radius:.5rem; padding:.5rem; min-height:120px; }
+.tactica.vacia { opacity:.45; }
+.tactica h3 { font-size:.85rem; margin:0 0 .5rem; display:flex; flex-direction:column; }
+.tactica h3 small { color:var(--tenue); font-weight:400; font-size:.7rem; }
+.tecnica { display:block; text-decoration:none; color:var(--texto); border-radius:.35rem; padding:.4rem .5rem;
+  margin-bottom:.4rem; font-size:.75rem; }
+.tecnica .id { display:block; font-weight:700; }
+.tecnica .nombre { display:block; }
+.tecnica .cuenta { display:block; color:rgba(255,255,255,.75); font-size:.68rem; }
+.tecnica.n1 { background:var(--n1); } .tecnica.n2 { background:var(--n2); } .tecnica.n3 { background:var(--n3); }
+.sin { color:var(--tenue); font-size:.75rem; margin:0; }
+table { width:100%; border-collapse:collapse; font-size:.85rem; }
+th, td { text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--borde); vertical-align:top; }
+th { color:var(--tenue); font-weight:600; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.8rem; }
+.titulo-regla { color:var(--tenue); font-size:.78rem; }
+.nivel, .estado { display:inline-block; padding:.1rem .5rem; border-radius:999px; font-size:.72rem; font-weight:600; }
+.nivel.critical { background:#7f1d1d; } .nivel.high { background:#9a3412; } .nivel.medium { background:#854d0e; }
+.nivel.low { background:#1e3a8a; } .nivel.informational { background:var(--info); }
+.estado.ok { background:var(--ok); } .estado.falla { background:var(--falla); } .estado.sin_muestras { background:var(--info); }
+a { color:#93c5fd; }
+footer { color:var(--tenue); font-size:.78rem; padding:0 2rem 2rem; }
+.leyenda span { display:inline-block; width:.9rem; height:.9rem; border-radius:.2rem; vertical-align:middle; margin:0 .3rem 0 .8rem; }
