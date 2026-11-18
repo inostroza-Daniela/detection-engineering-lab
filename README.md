@@ -119,6 +119,8 @@ La suite (`pytest --cov`, cobertura mínima 90 %) incluye:
 - Las muestras son sintéticas, generadas con semilla fija. El siguiente repo del portafolio (`incident-response-lab`, en preparación) va a ejecutar estos ataques en un laboratorio Docker con Wazuh; sus alertas reales entrarían como un conjunto aparte (`samples/reales/`, fuera del generador) para no romper la reproducibilidad de las sintéticas.
 - El catálogo ATT&CK va embebido (`attack.py`) para que todo corra sin red; incluye solo las técnicas que usan las reglas.
 
-## Licencia
+## Autora y licencia
 
-MIT. Ver [LICENSE](LICENSE).
+**Daniela Inostroza Mancilla** · [LinkedIn](https://www.linkedin.com/in/daniela-inostrozam/) · [GitHub](https://github.com/inostroza-Daniela)
+
+Publicado bajo licencia [MIT](LICENSE): puedes usar, copiar y modificar el código citando a la autora.
