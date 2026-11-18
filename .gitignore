@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.python-version
+
+# Herramientas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+resultados.xml
+
+# Salida generada
+site/
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
