@@ -2,3 +2,5 @@
 *.jsonl text eol=lf
 *.yml text eol=lf
 *.png binary
+*.gif binary
+*.mp4 binary

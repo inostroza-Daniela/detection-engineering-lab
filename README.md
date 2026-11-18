@@ -13,6 +13,12 @@ Corre idéntico en macOS (Apple Silicon), Ubuntu y Windows. Python puro, sin bin
 
 **Sitio:** <https://inostroza-daniela.github.io/detection-engineering-lab/>
 
+## Demo
+
+![Demo: validación de reglas y evaluación de 400 eventos](docs/media/demo.gif)
+
+[Video completo (1 min, MP4)](docs/media/demo.mp4): validación, evaluación, la decodificación de argumentos hexadecimales de auditd que hace visible una reverse shell, los tests y el sitio de cobertura.
+
 ## En 30 segundos
 
 ```bash
