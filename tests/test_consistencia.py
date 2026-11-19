@@ -66,6 +66,7 @@ def test_identidad_estable(coleccion: Coleccion, nombre: str) -> None:
     )
     assert regla.nivel in {"informational", "low", "medium", "high", "critical"}
     assert regla.sigma.author == "Daniela Inostroza"
+    assert regla.sigma.license == "DRL-1.1"
 
 
 def test_ids_y_nombres_son_unicos(coleccion: Coleccion) -> None:

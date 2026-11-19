@@ -9,6 +9,7 @@ description: >
 references:
   - https://attack.mitre.org/techniques/T1543/002/
 author: Daniela Inostroza
+license: DRL-1.1
 date: 2026-11-18
 tags:
   - attack.persistence

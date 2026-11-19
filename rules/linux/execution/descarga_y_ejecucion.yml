@@ -10,6 +10,7 @@ references:
   - https://attack.mitre.org/techniques/T1105/
   - https://attack.mitre.org/techniques/T1059/004/
 author: Daniela Inostroza
+license: DRL-1.1
 date: 2026-11-18
 tags:
   - attack.command_and_control

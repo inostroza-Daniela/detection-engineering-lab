@@ -10,6 +10,7 @@ references:
   - https://attack.mitre.org/techniques/T1046/
   - https://docs.suricata.io/en/latest/output/eve/eve-json-format.html
 author: Daniela Inostroza
+license: DRL-1.1
 date: 2026-11-18
 tags:
   - attack.discovery

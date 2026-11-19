@@ -5,7 +5,8 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776ab)](pyproject.toml)
 [![Sigma](https://img.shields.io/badge/reglas-Sigma-0a7)](rules/linux)
 [![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-c00)](https://inostroza-daniela.github.io/detection-engineering-lab/attack-navigator.json)
-[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue)](LICENSE)
+[![Licencia MIT](https://img.shields.io/badge/c%C3%B3digo-MIT-blue)](LICENSE)
+[![Reglas DRL 1.1](https://img.shields.io/badge/reglas-DRL--1.1-blue)](LICENSE.Detection.Rules.md)
 
 Laboratorio de ingeniería de detección para Linux: **16 reglas Sigma** (13 base y 3 correlaciones) mapeadas a **MITRE ATT&CK**, un **motor en Python** que las evalúa sobre eventos JSON con el formato de alertas de **Wazuh**, **logs de muestra** reproducibles con casos positivos y negativos por regla, una suite **pytest** que valida cada regla contra sus muestras, y un **sitio estático** con la matriz de cobertura.
 
@@ -125,8 +126,11 @@ La suite (`pytest --cov`, cobertura mínima 90 %) incluye:
 - Las muestras son sintéticas, generadas con semilla fija. El siguiente repo del portafolio (`incident-response-lab`, en preparación) va a ejecutar estos ataques en un laboratorio Docker con Wazuh; sus alertas reales entrarían como un conjunto aparte (`samples/reales/`, fuera del generador) para no romper la reproducibilidad de las sintéticas.
 - El catálogo ATT&CK va embebido (`attack.py`) para que todo corra sin red; incluye solo las técnicas que usan las reglas.
 
-## Autora y licencia
+## Autora y licencias
 
 **Daniela Inostroza Mancilla** · [LinkedIn](https://www.linkedin.com/in/daniela-inostrozam/) · [GitHub](https://github.com/inostroza-Daniela)
 
-Publicado bajo licencia [MIT](LICENSE): puedes usar, copiar y modificar el código citando a la autora.
+El repositorio usa dos licencias, igual que SigmaHQ:
+
+- **Reglas de detección y sus fichas** (`rules/`, `docs/reglas/`): [Detection Rule License 1.1](LICENSE.Detection.Rules.md). Puedes usarlas, modificarlas y redistribuirlas, incluso comercialmente, conservando el campo `author` de cada regla y un enlace al origen; si las usas sobre datos, la autoría debe aparecer en las detecciones que generen. Cada regla lo declara en su campo `license`.
+- **Motor, tests y el resto del código**: [MIT](LICENSE). Puedes usar, copiar, modificar y redistribuir el código conservando el aviso de copyright y la licencia.

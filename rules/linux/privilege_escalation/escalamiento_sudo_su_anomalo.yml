@@ -10,6 +10,7 @@ references:
   - https://attack.mitre.org/techniques/T1548/003/
   - https://www.sudo.ws/docs/man/sudoers.man/
 author: Daniela Inostroza
+license: DRL-1.1
 date: 2026-11-18
 tags:
   - attack.privilege_escalation
