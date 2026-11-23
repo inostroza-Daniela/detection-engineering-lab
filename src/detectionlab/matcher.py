@@ -64,6 +64,67 @@ def evaluar(nodo: ConditionItem | Any, evento: Evento) -> bool:
     raise ErrorMatcher(f"nodo de condición no soportado: {type(nodo).__name__}")
 
 
+_TIPOS_VALOR_SOPORTADOS: tuple[type[SigmaType], ...] = (
+    SigmaExists,
+    SigmaNull,
+    SigmaFieldReference,
+    SigmaRegularExpression,
+    SigmaCIDRExpression,
+    SigmaCompareExpression,
+    SigmaNumber,
+    SigmaBool,
+    SigmaString,
+)
+
+
+def revisar_soporte(regla: SigmaRule) -> list[str]:
+    """Recorre la condición parseada y lista lo que el motor no sabría evaluar.
+
+    Devuelve un mensaje por cada nodo o tipo de valor fuera del alcance del
+    matcher, de modo que `validar` pueda avisar en tiempo de validación en
+    lugar de fallar recién al evaluar un evento. Una lista vacía significa que
+    la regla es evaluable por completo.
+    """
+    problemas: list[str] = []
+    for condicion in regla.detection.parsed_condition:
+        _revisar_nodo(condicion.parsed, problemas)
+    return problemas
+
+
+def _revisar_nodo(nodo: ConditionItem | Any, problemas: list[str]) -> None:
+    if isinstance(nodo, ConditionAND | ConditionOR):
+        for hijo in nodo.args:
+            _revisar_nodo(hijo, problemas)
+        return
+    if isinstance(nodo, ConditionNOT):
+        _revisar_nodo(nodo.args[0], problemas)
+        return
+    if isinstance(nodo, ConditionFieldEqualsValueExpression | ConditionValueExpression):
+        _revisar_valor(nodo.value, problemas)
+        return
+    problemas.append(f"nodo de condición no soportado: {type(nodo).__name__}")
+
+
+def _revisar_valor(valor: SigmaType, problemas: list[str]) -> None:
+    if isinstance(valor, SigmaExpansion):
+        for interno in valor.values:
+            _revisar_valor(interno, problemas)
+        return
+    if isinstance(valor, SigmaString):
+        if any(isinstance(parte, Placeholder) for parte in valor.s):
+            problemas.append(f"placeholder sin expandir: %{_nombre_placeholder(valor)}%")
+        return
+    if not isinstance(valor, _TIPOS_VALOR_SOPORTADOS):
+        problemas.append(f"tipo de valor Sigma no soportado: {type(valor).__name__}")
+
+
+def _nombre_placeholder(valor: SigmaString) -> str:
+    for parte in valor.s:
+        if isinstance(parte, Placeholder):
+            return parte.name
+    return "?"
+
+
 def _comparar_campo(campo: str, esperado: SigmaType, evento: Evento) -> bool:
     if isinstance(esperado, SigmaExists):
         return existe_campo(evento, campo) == bool(esperado.exists)

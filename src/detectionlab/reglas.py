@@ -33,6 +33,7 @@ from sigma.validators.core.values import (
 )
 
 from detectionlab.attack import TACTICAS, TECNICAS
+from detectionlab.matcher import revisar_soporte
 
 ReglaSigma = SigmaRule | SigmaCorrelationRule
 
@@ -193,6 +194,16 @@ def validar(coleccion: Coleccion) -> list[Hallazgo]:
         for error in regla.sigma.errors:
             hallazgos.append(Hallazgo(regla.nombre, regla.ruta, f"pySigma: {error}"))
         hallazgos.extend(_validar_metadatos(regla))
+
+    for regla in coleccion.base:
+        if not isinstance(regla.sigma, SigmaRule) or regla.sigma.errors:
+            continue
+        try:
+            mensajes = revisar_soporte(regla.sigma)
+        except SigmaError:
+            continue
+        for mensaje in mensajes:
+            hallazgos.append(Hallazgo(regla.nombre, regla.ruta, f"motor: {mensaje}"))
 
     validador = SigmaValidator(VALIDADORES_SIGMA)
     reglas_base = [regla.sigma for regla in coleccion.base if isinstance(regla.sigma, SigmaRule)]

