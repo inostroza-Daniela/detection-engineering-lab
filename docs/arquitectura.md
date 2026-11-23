@@ -45,6 +45,12 @@ Reimplementar el parser habría duplicado código que ya está probado y que evo
 
 Los campos con lista (`rule.groups`) coinciden si algún elemento cumple. Las palabras clave sin campo se buscan en todos los valores del evento.
 
+### Alcance de `windash`
+
+`windash` cubre la convención de banderas de línea de comando en Windows, donde `-flag` y `/flag` son equivalentes: pySigma expande el valor a variantes con guion normal, los guiones Unicode (`–`, `—`, `―`) y la barra, y el matcher recorre esas variantes con un OR. Por eso `cmdline|windash|contains: '-foo'` dispara tanto con `-foo` como con `/foo`.
+
+Lo que `windash` **no** hace es normalizar el separador de rutas `\` ↔ `/`: solo transforma el guion de la bandera, no la barra invertida de una ruta. Un valor sin guion, como `C:\Windows\System32\cmd.exe`, no genera variantes adicionales y se compara tal cual; eso es el comportamiento definido por pySigma, no una omisión del motor.
+
 Las correlaciones sí se implementan completas porque pySigma solo las parsea. La semántica elegida para `event_count` y `value_count` es ventana deslizante con reinicio para umbrales `gt`/`gte` (una ráfaga larga genera pocas alertas) y ventanas fijas para el resto de operadores.
 
 ## Validación
@@ -54,5 +60,6 @@ Las correlaciones sí se implementan completas porque pySigma solo las parsea. L
 1. Errores de parseo de pySigma (`collect_errors=True`).
 2. Validadores de pySigma seleccionados en `reglas.VALIDADORES_SIGMA`: condiciones colgantes, identificadores duplicados, modificadores incompatibles, comodines mal escapados, números como texto. No se usa `ATTACKTagValidator` porque descarga el catálogo de MITRE desde internet y el repo corre sin red.
 3. Metadatos propios: UUID, `name` igual al archivo, nivel, táctica y técnica presentes y dentro del catálogo embebido (`attack.py`), coherencia técnica ↔ táctica, `falsepositives`, `references`, `logsource`.
+4. Soporte del motor: `matcher.revisar_soporte` recorre la condición parseada y avisa si una regla usa un tipo de valor o un placeholder sin expandir que el matcher no sabría evaluar, de modo que el fallo aparece en `validate` y no recién al correr la regla contra un evento.
 
 `tests/test_consistencia.py` corre esa misma validación y suma lo que solo tiene sentido en este repo: ficha, muestras, carpeta igual a la táctica.
